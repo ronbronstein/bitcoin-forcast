@@ -38,6 +38,63 @@ class DashboardView:
         target_base = median_path[-1]
         target_bear = p10_path[-1]
         
+        # Calculate regime comparison for current month
+        current_month = current_conditions['Date'].month
+        month_name = current_conditions['Date'].strftime('%B')
+        
+        # Get baseline vs recent regime stats
+        baseline_row = matrix_df[
+            (matrix_df['Scenario'] == '1. Baseline (All History)') & 
+            (matrix_df['Month'] == month_name)
+        ]
+        recent_row = matrix_df[
+            (matrix_df['Scenario'] == '1b. Recent Regime (2020+)') & 
+            (matrix_df['Month'] == month_name)
+        ]
+        
+        if not baseline_row.empty and not recent_row.empty:
+            baseline_ret = baseline_row['Avg_Return'].values[0]
+            recent_ret = recent_row['Avg_Return'].values[0]
+            baseline_wr = baseline_row['Win_Rate'].values[0]
+            recent_wr = recent_row['Win_Rate'].values[0]
+            
+            # Create comparison chart
+            fig_regime = go.Figure()
+            
+            fig_regime.add_trace(go.Bar(
+                name='All History',
+                x=['Avg Return', 'Win Rate'],
+                y=[baseline_ret, baseline_wr],
+                marker_color='#8b949e',
+                text=[f'{baseline_ret:+.1f}%', f'{baseline_wr:.0f}%'],
+                textposition='outside'
+            ))
+            
+            fig_regime.add_trace(go.Bar(
+                name='Recent (2020+)',
+                x=['Avg Return', 'Win Rate'],
+                y=[recent_ret, recent_wr],
+                marker_color='#1f6feb',
+                text=[f'{recent_ret:+.1f}%', f'{recent_wr:.0f}%'],
+                textposition='outside'
+            ))
+            
+            fig_regime.update_layout(
+                template="plotly_dark",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                margin=dict(l=40, r=40, t=40, b=40),
+                barmode='group',
+                title=f'{month_name} Performance: Historical vs Recent Regime',
+                yaxis=dict(title='Percentage'),
+                showlegend=True
+            )
+            
+            plot_json_regime = json.dumps(fig_regime.to_dict(), cls=plotly.utils.PlotlyJSONEncoder)
+        else:
+            # Empty chart if data not available
+            plot_json_regime = json.dumps({'data': [], 'layout': {}})
+        
         # --- 1. HTML TEMPLATE START ---
         html = """
         <!DOCTYPE html>
@@ -82,6 +139,8 @@ class DashboardView:
                 .neg-mid { color: #ffa198; }
                 .neg-high { color: #da3633; }
                 
+                .low-confidence { opacity: 0.5; font-style: italic; }
+                
             </style>
         </head>
         <body>
@@ -94,6 +153,41 @@ class DashboardView:
                     <div class="card">
                         <h3>Current Conditions</h3>
         """
+        
+        # Calculate Halving Phase
+        from scenario_engine import get_halving_phase
+        current_date = current_conditions.get('Date')
+        
+        if current_date:
+            months_since_halving = get_halving_phase(current_date)
+            if months_since_halving is not None:
+                years = int(months_since_halving / 12)
+                months = int(months_since_halving % 12)
+                
+                # Determine phase name
+                if months_since_halving < 12:
+                    phase_name = "🚀 Year 1 Post-Halving"
+                    phase_color = "#3fb950"  # Green
+                elif months_since_halving < 24:
+                    phase_name = "📈 Year 2 Post-Halving"
+                    phase_color = "#58a6ff"  # Blue
+                elif months_since_halving >= 36:
+                    phase_name = "🔄 Pre-Halving Year"
+                    phase_color = "#e3b341"  # Yellow
+                else:
+                    phase_name = "📊 Mid-Cycle"
+                    phase_color = "#8b949e"  # Gray
+                
+                html += f"""
+                    <div class="status-row" style="border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                        <span style="font-weight: 700;">Halving Phase</span>
+                        <span class="status-val" style="color: {phase_color}">{phase_name}</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Time Since Halving</span>
+                        <span class="status-val">{years}y {months}m</span>
+                    </div>
+                """
         
         # Add Status Rows
         for k, v in current_conditions.items():
@@ -146,6 +240,12 @@ class DashboardView:
                     </div>
                 </div>
                 
+                <!-- REGIME COMPARISON SECTION -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Regime Comparison: All History vs Recent Era (2020+)</h3>
+                    <div id="regime_chart" style="height: 250px;"></div>
+                </div>
+                
                 <!-- BOTTOM: THE MATRIX -->
                 <div class="card">
                     <h3>Historical Scenario Matrix (Win Rate % / Avg Return %)</h3>
@@ -177,17 +277,38 @@ class DashboardView:
                     win = row['Win_Rate'].values[0]
                     count = row['Count'].values[0]
                     
-                    # Color Logic (Win Rate is stronger signal than Avg Return)
+                    # Get confidence interval if available
+                    ci_lower = row['CI_Lower_90'].values[0] if 'CI_Lower_90' in row.columns else None
+                    ci_upper = row['CI_Upper_90'].values[0] if 'CI_Upper_90' in row.columns else None
+                    
+                    # Determine cell opacity based on sample size
+                    opacity = min(1.0, count / 10)  # Fade cells with <10 samples
+                    
+                    # Color Logic
                     color_class = ""
-                    if win >= 65: color_class = "pos-high"      # Strong Bullish
-                    elif win > 50: color_class = "pos-mid"      # Mild Bullish
-                    elif win <= 35: color_class = "neg-high"    # Strong Bearish
-                    elif win <= 50: color_class = "neg-mid"     # Mild Bearish
+                    if win >= 65: color_class = "pos-high"
+                    elif win > 50: color_class = "pos-mid"
+                    elif win <= 35: color_class = "neg-high"
+                    elif win <= 50: color_class = "neg-mid"
+                    
+                    # Warning emoji for low samples
+                    warning = ""
+                    if count < 5:
+                        warning = " ⚠️"
+                        color_class += " low-confidence"
+                    elif count < 10:
+                        warning = " ⚠"
+                    
+                    # Build cell with confidence interval if available
+                    ci_text = ""
+                    if ci_lower is not None and not np.isnan(ci_lower):
+                        ci_text = f"<br><span style='font-size: 9px; opacity: 0.6;'>CI: {ci_lower:+.1f}% to {ci_upper:+.1f}%</span>"
                     
                     html += f"""
-                        <td>
-                            <span class="cell-val {color_class}">{ret:+.1f}%</span>
+                        <td style="opacity: {opacity}">
+                            <span class="cell-val {color_class}">{ret:+.1f}%{warning}</span>
                             <span class="cell-sub">{win:.0f}% WR ({count}y)</span>
+                            {ci_text}
                         </td>
                     """
                 else:
@@ -262,6 +383,9 @@ class DashboardView:
         <script>
             var plotData = {plot_json};
             Plotly.newPlot('chart_div', plotData.data, plotData.layout, {{responsive: true}});
+            
+            var regimeData = {plot_json_regime};
+            Plotly.newPlot('regime_chart', regimeData.data, regimeData.layout, {{responsive: true}});
         </script>
         </body>
         </html>
