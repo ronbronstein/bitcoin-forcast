@@ -15,7 +15,7 @@ class DashboardView:
         """
         print("🎨 Rendering Dashboard...")
         
-        dates, price_paths, match_logic = forecast_data
+        dates, price_paths, match_logic, sample_size = forecast_data
         
         # Calculate Forecast Stats
         final_prices = price_paths[:, -1]
@@ -26,7 +26,12 @@ class DashboardView:
         print(f"DEBUG VIEW: Start Price={median_path[0]}, End Price={median_path[-1]}")
         print(f"DEBUG VIEW: P10 Path Sample: {p10_path[:3]}")
         
-        win_rate = np.mean(final_prices > price_paths[0,0]) * 100
+        # Calculate Next Month Win Rate (Immediate short term signal)
+        # price_paths[:, 1] is the price at Month 1
+        next_month_wins = np.mean(price_paths[:, 1] > price_paths[:, 0]) * 100
+        
+        # Keep existing 12-month calculation
+        year_end_wins = np.mean(final_prices > price_paths[0,0]) * 100
         
         # Get Final Targets for Display
         target_bull = p90_path[-1]
@@ -108,6 +113,10 @@ class DashboardView:
                                 <span class="status-val" style="color: var(--accent)">{match_logic}</span>
                             </div>
                             <div class="status-row">
+                                <span>Sample Size (N)</span>
+                                <span class="status-val" style="color: {'#3fb950' if sample_size >= 10 else '#da3633' if sample_size < 5 else '#e3b341'}">{sample_size} years</span>
+                            </div>
+                            <div class="status-row">
                                 <span>🚀 Bull Case (P90)</span>
                                 <span class="status-val" style="color: #3fb950">${target_bull:,.0f}</span>
                             </div>
@@ -119,9 +128,13 @@ class DashboardView:
                                 <span>🐻 Bear Case (P10)</span>
                                 <span class="status-val" style="color: #da3633">${target_bear:,.0f}</span>
                             </div>
-                             <div class="status-row">
-                                <span>Win Rate</span>
-                                <span class="status-val" style="color: {'var(--green)' if win_rate > 50 else 'var(--red)'}">{win_rate:.1f}%</span>
+                            <div class="status-row">
+                                <span>1-Mo Win Prob</span>
+                                <span class="status-val" style="color: {'var(--green)' if next_month_wins > 50 else 'var(--red)'}">{next_month_wins:.1f}%</span>
+                            </div>
+                            <div class="status-row">
+                                <span>12-Mo Win Prob</span>
+                                <span class="status-val" style="color: {'var(--green)' if year_end_wins > 50 else 'var(--red)'}">{year_end_wins:.1f}%</span>
                             </div>
                         </div>
                     </div>

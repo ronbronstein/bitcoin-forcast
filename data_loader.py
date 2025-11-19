@@ -22,10 +22,10 @@ class DataLoader:
         
         try:
             # Download bulk data
-            # period="12y" captures enough history
+            # Use 'max' to get maximum available history for proper lookback windows
             raw = yf.download(
                 list(self.tickers.values()), 
-                start="2012-01-01", # Explicit start is safer
+                period="max",  # CHANGE: Use max to get 2010-2011 data if available
                 interval="1mo", 
                 auto_adjust=True, 
                 progress=False
@@ -86,9 +86,8 @@ class DataLoader:
 
     def calculate_monthly_rsi(self, series, period=14):
         """
-        Calculates RSI on Monthly data.
-        Formula: RSI = 100 - (100 / (1 + RS))
-        RS = Avg Gain / Avg Loss
+        Calculates RSI using Wilder's Smoothing (EWMA).
+        Current implementation fixes the SMA error.
         """
         delta = series.diff()
         
@@ -96,10 +95,10 @@ class DataLoader:
         gain = delta.where(delta > 0, 0)
         loss = -delta.where(delta < 0, 0)
         
-        # Calculate average gain/loss
-        # First average is simple mean, subsequent are smoothed
-        avg_gain = gain.rolling(window=period, min_periods=period).mean()
-        avg_loss = loss.rolling(window=period, min_periods=period).mean()
+        # Use EWMA for Wilder's Smoothing approximation
+        # alpha = 1/period is the standard pandas proxy for Wilder's
+        avg_gain = gain.ewm(alpha=1/period, min_periods=period, adjust=False).mean()
+        avg_loss = loss.ewm(alpha=1/period, min_periods=period, adjust=False).mean()
         
         rs = avg_gain / avg_loss
         rsi = 100 - (100 / (1 + rs))

@@ -12,19 +12,23 @@ class ScenarioEngine:
         This represents the 'Now' state used to forecast next month.
         """
         if self.df.empty: return {}
-        last = self.df.iloc[-1]
         
+        # Get the last COMPLETED month for trend comparison
+        # We treat the 'current' partial candle as the state we are in, 
+        # but we must be careful about comparing it to fully closed months.
+        last = self.df.iloc[-1] 
+        prev = self.df.iloc[-2]
+        
+        # Re-calculate trends manually for the dashboard to ensure no NaN leakage
+        dxy_trend_val = last['DXY'] - prev['DXY'] if 'DXY' in last else 0
+        rate_trend_val = last['Rates'] - prev['Rates'] if 'Rates' in last else 0
+
         return {
-            # Current RSI (Unshifted, because we use it to predict T+1)
             "RSI_BTC": last['RSI_BTC'],
             "RSI_SPX": last['RSI_SPX'],
             "RSI_NDX": last['RSI_NDX'],
-            
-            # Current Trends
-            "DXY_Trend": last['Trend_DXY'], # >0 Rising, <=0 Falling
-            "Rate_Trend": last['Trend_Rates'],
-            
-            # Date
+            "DXY_Trend": dxy_trend_val, 
+            "Rate_Trend": rate_trend_val,
             "Date": last.name
         }
 
@@ -172,6 +176,9 @@ class ScenarioEngine:
         # We need dates matching price_paths (Start + 12 months)
         future_dates = [start_date] + [start_date + pd.DateOffset(months=i+1) for i in range(months)]
         
+        # Track sample size for transparency
+        sample_sizes = []
+        
         for t in range(months):
             # Target month is the one we are predicting (t+1)
             target_month = future_dates[t+1].month
@@ -179,9 +186,10 @@ class ScenarioEngine:
             # Get pool of historical returns for this month
             month_data = self.df[self.df.index.month == target_month]
             
-            # SELECT SAMPLES
-            if t == 0:
-                # FIRST MONTH: Use Smart Matching
+            # LOGIC CHANGE: Apply Conditional Logic for the first 3 months (t=0, 1, 2)
+            # This assumes regimes last at least a quarter.
+            if t < 3:
+                # FIRST 3 MONTHS: Use Smart Matching
                 # Try exact match: RSI State + DXY Trend
                 if is_high_rsi:
                     subset = month_data[month_data['Prev_RSI_BTC'] > 60]
@@ -197,14 +205,24 @@ class ScenarioEngine:
                     dxy_subset = subset[subset['Prev_DXY_Trend'] <= 0]
                     
                 # Fallback if too strict
-                samples = dxy_subset['Ret_BTC'].values if len(dxy_subset) >= 3 else subset['Ret_BTC'].values
-                if len(samples) == 0: samples = month_data['Ret_BTC'].values
-                
-                match_logic = "Smart Match (RSI + DXY)"
+                if len(dxy_subset) >= 3:
+                    samples = dxy_subset['Ret_BTC'].values
+                else:
+                    samples = subset['Ret_BTC'].values
+                    
+                # CRITICAL: Add Sample Size Guard
+                # If filtered subset is too small (< 5), force fallback to Baseline immediately
+                if len(samples) < 5:
+                    samples = month_data['Ret_BTC'].values  # Fallback
+                    match_logic = f"Baseline (Insufficient Samples for Month {t+1})"
+                else:
+                    match_logic = "Smart Match (3-Month Decay)"
             else:
-                # FUTURE MONTHS: Use Baseline (All History)
+                # Months 4-12: Pure Baseline
                 samples = month_data['Ret_BTC'].values
                 match_logic = "Baseline"
+            
+            sample_sizes.append(len(samples))
                 
             # Bootstrap Simulation
             if len(samples) > 0:
@@ -219,5 +237,5 @@ class ScenarioEngine:
             else:
                 price_paths[:, t+1] = price_paths[:, t] # No change if no data
 
-        return future_dates, price_paths, match_logic
+        return future_dates, price_paths, match_logic, sample_sizes[0]  # Return first month sample size
 

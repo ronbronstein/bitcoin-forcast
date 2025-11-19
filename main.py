@@ -3,6 +3,7 @@ import scenario_engine
 import dashboard_view
 import os
 import webbrowser
+import datetime
 
 def main():
     print("🚀 Starting Bitcoin Scenario Matrix (V4)...")
@@ -28,6 +29,19 @@ def main():
     # Clean up timezone for logic
     if current_date.tzinfo is not None:
         current_date = current_date.tz_localize(None)
+    
+    # Incomplete Month Warning
+    current_day = current_date.day
+    # Simple approach to get days in month
+    if current_date.month == 12:
+        next_month = current_date.replace(year=current_date.year + 1, month=1, day=1)
+    else:
+        next_month = current_date.replace(month=current_date.month + 1, day=1)
+    days_in_month = (next_month - datetime.timedelta(days=1)).day
+    
+    if current_day < 28:
+        print(f"⚠️ WARNING: Current month ({current_date.strftime('%B')}) is incomplete (Day {current_day}).")
+        print("   Indicators are volatile. Forecast assumes current RSI/Trends hold through month-end.")
     
     forecast_data = engine.generate_forecast(current_price, current_date)
     current_conditions = engine.get_current_conditions()
