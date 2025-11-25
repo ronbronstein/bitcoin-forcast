@@ -36,14 +36,14 @@ class ScenarioEngine:
         """
         Returns the conditions of the VERY LAST row in the dataset.
         This represents the 'Now' state used to forecast next month.
-        
+
         CRITICAL: Uses the same calculated columns that historical scenarios use
         to ensure apples-to-apples comparison.
         """
         if self.df.empty: return {}
-        
+
         last = self.df.iloc[-1]
-        
+
         # Use the actual pre-calculated trend columns (not manual recalc)
         # This ensures consistency with how historical scenarios are matched
         conditions = {
@@ -52,13 +52,18 @@ class ScenarioEngine:
             "RSI_NDX": last['RSI_NDX'],
             "DXY_Trend": last['Trend_DXY'],  # FIXED: Use pre-calculated column
             "Rate_Trend": last['Trend_Rates'],  # FIXED: Use pre-calculated column
-            "Date": last.name
+            "Date": last.name,
+            # FLAW 4 PREP: Add RSI components (use .get() for safety)
+            "BTC_AG": last.get('BTC_AG'),
+            "BTC_AL": last.get('BTC_AL'),
         }
-        
-        # Add active addresses if available
-        if 'active_addresses' in last.index:
-            conditions['Active_Addresses'] = last['active_addresses']
-        
+
+        # FLAW 2/10: Add active addresses with corrected column names
+        if 'Prev_Active_Addresses' in last.index and pd.notna(last['Prev_Active_Addresses']):
+            conditions['Active_Addresses (Lagged)'] = last['Prev_Active_Addresses']
+        if 'Prev_Active_Addresses_Z' in last.index and pd.notna(last['Prev_Active_Addresses_Z']):
+            conditions['Active_Addresses_Z'] = last['Prev_Active_Addresses_Z']
+
         return conditions
 
     def run_matrix_analysis(self):
@@ -164,20 +169,20 @@ class ScenarioEngine:
                 ), axis=1),
                 "desc": "Year before halving - accumulation phase"
             },
-            # --- Network Health ---
+            # --- Network Health (FLAW 10 FIX: Use P.I.T. Z-score) ---
             {
-                "name": "15. High Network Activity",
+                "name": "15. High Network Activity (Z>1.0)",
                 "cond": lambda d: (
-                    d['active_addresses'] > d['active_addresses'].quantile(0.7)
-                ) if 'active_addresses' in d.columns else [False] * len(d),
-                "desc": "Top 30% network usage - strong demand"
+                    d['Prev_Active_Addresses_Z'] > 1.0
+                ) if 'Prev_Active_Addresses_Z' in d.columns else [False] * len(d),
+                "desc": "Activity significantly above 12-month rolling average (P.I.T.)"
             },
             {
-                "name": "16. Low Network Activity",
+                "name": "16. Low Network Activity (Z<-1.0)",
                 "cond": lambda d: (
-                    d['active_addresses'] < d['active_addresses'].quantile(0.3)
-                ) if 'active_addresses' in d.columns else [False] * len(d),
-                "desc": "Bottom 30% network usage - weak demand"
+                    d['Prev_Active_Addresses_Z'] < -1.0
+                ) if 'Prev_Active_Addresses_Z' in d.columns else [False] * len(d),
+                "desc": "Activity significantly below 12-month rolling average (P.I.T.)"
             }
         ]
 
@@ -268,124 +273,141 @@ class ScenarioEngine:
 
     def generate_forecast(self, current_price, start_date, months=12, simulations=2000):
         """
-        Generates a forecast path.
-        Logic:
-        - Month 1: Use samples from Historical Months that match CURRENT conditions.
-        - Month 2-12: Use samples from 'Baseline' (All Years) for that month.
+        FLAW 4 FIX: Generates a forecast path using Path-Dependent Monte Carlo.
+        RSI evolves efficiently by tracking AG/AL components.
+        FLAW 6 FIX: Uses time-weighted sampling to address stationarity.
         """
-        print(f"🔮 Generating Forecast Paths... (Price: {current_price})")
-        
-        # 1. Identify Current State
-        current = self.get_current_conditions()
-        
-        # Create Logic for Matching
-        # We match broadly to avoid sample size 0.
-        # Default Logic: Match RSI State AND DXY Trend.
-        
-        # Match scenario definitions exactly (65/45 thresholds)
-        is_high_rsi = current['RSI_BTC'] > 65  # FIXED: was 60, now 65
-        is_low_rsi = current['RSI_BTC'] < 45
-        is_strong_dxy = current['DXY_Trend'] > 0
-        
-        # 2. Simulation Setup
-        paths = np.zeros((simulations, months))
+        print(f"🔮 Generating Path-Dependent Forecast Paths... (Price: {current_price})")
+
+        # 1. Setup
+        RSI_PERIOD = 14
+        RSI_HIGH = 65  # Flaw 8: Acknowledged threshold
+        RSI_LOW = 45
+        MIN_SAMPLES = 5  # Flaw 5: Minimum sample size threshold
+
         price_paths = np.zeros((simulations, months + 1))
         price_paths[:, 0] = current_price
-        
-        # Time
-        # We need dates matching price_paths (Start + 12 months)
         future_dates = [start_date] + [start_date + pd.DateOffset(months=i+1) for i in range(months)]
-        
-        # Track sample size for transparency
-        sample_sizes = []
-        
-        # Track the FIRST month's matching logic for display
-        first_month_logic = None
-        first_month_sample_size = 0
-        
-        for t in range(months):
-            # Target month is the one we are predicting (t+1)
-            target_month = future_dates[t+1].month
-            
-            # Get pool of historical returns for this month
-            month_data = self.df[self.df.index.month == target_month]
-            
-            # 6-MONTH EXPONENTIAL DECAY: Gradually blend from conditioned -> baseline
-            # Month 0: 100% conditioned
-            # Month 1: 80% conditioned (0.8^1)
-            # Month 2: 64% conditioned (0.8^2)
-            # ...
-            # Month 6: 26% conditioned (0.8^6)
-            # Month 7+: Pure baseline
-            
-            decay_rate = 0.8  # 20% decay per month
-            conditioning_weight = decay_rate ** t
-            
-            if t < 6 and conditioning_weight > 0.25:
-                # Apply smart matching with decay weight
-                
-                # Filter by RSI state
-                if is_high_rsi:
-                    subset = month_data[month_data['Prev_RSI_BTC'] > 65]
-                elif is_low_rsi:
-                    subset = month_data[month_data['Prev_RSI_BTC'] < 45]
-                else:
-                    subset = month_data
-                
-                # Overlay DXY filter if sufficient samples
-                if is_strong_dxy:
-                    dxy_subset = subset[subset['Prev_DXY_Trend'] > 0]
-                else:
-                    dxy_subset = subset[subset['Prev_DXY_Trend'] <= 0]
-                
-                # Use DXY filter only if we have enough samples
-                if len(dxy_subset) >= 3:
-                    conditioned_samples = dxy_subset['Ret_BTC'].values
-                else:
-                    conditioned_samples = subset['Ret_BTC'].values
-                
-                # Baseline samples
-                baseline_samples = month_data['Ret_BTC'].values
-                
-                # Blend conditioned and baseline based on decay weight
-                if len(conditioned_samples) >= 5:
-                    # Enough samples: blend
-                    n_conditioned = int(simulations * conditioning_weight)
-                    n_baseline = simulations - n_conditioned
-                    
-                    drawn_cond = np.random.choice(conditioned_samples, size=n_conditioned)
-                    drawn_base = np.random.choice(baseline_samples, size=n_baseline)
-                    samples = np.concatenate([drawn_cond, drawn_base])
-                    
-                    current_logic = f"Blended (Month {t+1}, {conditioning_weight*100:.0f}% conditioned, {len(conditioned_samples)}y)"
-                else:
-                    # Not enough conditioned samples: use baseline
-                    samples = baseline_samples
-                    current_logic = f"Baseline (Insufficient samples for conditioning)"
-            else:
-                # Month 6+: Pure baseline
-                samples = month_data['Ret_BTC'].values
-                current_logic = "Baseline (Beyond conditioning window)"
-            
-            # Store first month's logic
-            if t == 0:
-                first_month_logic = current_logic
-                first_month_sample_size = len(samples)
-            
-            sample_sizes.append(len(samples))
-                
-            # Bootstrap Simulation
-            if len(samples) > 0:
-                # Convert pct to log returns for summation? 
-                # Or just use simple compounding: Price * (1 + r/100)
-                # Let's use simple returns here as we have monthly discrete chunks
-                drawn_returns = np.random.choice(samples, size=simulations)
-                paths[:, t] = drawn_returns
-                
-                # Update Price
-                price_paths[:, t+1] = price_paths[:, t] * (1 + drawn_returns/100)
-            else:
-                price_paths[:, t+1] = price_paths[:, t] # No change if no data
 
-        return future_dates, price_paths, first_month_logic, first_month_sample_size
+        # 2. Initialize Simulation States (Vectorized)
+        initial_conditions = self.get_current_conditions()
+
+        # Check if components are available
+        if initial_conditions.get('BTC_AG') is None or initial_conditions.get('BTC_AL') is None or pd.isna(initial_conditions['BTC_AG']):
+            print("❌ Error: Missing or NaN RSI components (AG/AL). Cannot run simulation.")
+            return future_dates, price_paths, "Error: Insufficient Data (AG/AL)", 0
+
+        states = {
+            'price': np.full(simulations, current_price),
+            'BTC_AG': np.full(simulations, initial_conditions['BTC_AG']),
+            'BTC_AL': np.full(simulations, initial_conditions['BTC_AL']),
+        }
+
+        # Get initial macro conditions (Exogenous/Static assumption)
+        is_strong_dxy = initial_conditions.get('DXY_Trend', 0) > 0
+
+        # FLAW 6 FIX (Stationarity): Pre-calculate time-decay weights
+        # Half-life of 4 years (prioritizes recent data)
+        half_life_years = 4
+        decay_lambda = np.log(2) / half_life_years
+        # Ensure start_date and self.df.index have compatible types (timezone naive)
+        start_date_naive = start_date.tz_localize(None) if start_date.tzinfo is not None else start_date
+        df_index_naive = self.df.index.tz_localize(None) if self.df.index.tzinfo is not None else self.df.index
+
+        history_ages_years = (start_date_naive - df_index_naive).days / 365.25
+        history_weights = np.exp(-decay_lambda * np.maximum(0, history_ages_years))
+        weight_series = pd.Series(history_weights, index=self.df.index)
+
+        match_logic = "Path-Dependent (RSI) + Static (DXY) + Time-Weighted Sampling"
+        sample_size_context = len(self.df)  # Report history length
+
+        # 3. Simulation Loop
+        for t in range(months):
+            target_month = future_dates[t+1].month
+            month_data = self.df[self.df.index.month == target_month]
+
+            if month_data.empty:
+                price_paths[:, t+1] = price_paths[:, t]
+                continue
+
+            # 3.1 Calculate Current Simulated Conditions (RSI)
+            # Handle division by zero safely (if AL is 0, RS is effectively infinite, RSI=100)
+            rs = np.divide(states['BTC_AG'], states['BTC_AL'], out=np.full_like(states['BTC_AG'], 1000.0), where=states['BTC_AL']!=0)
+            sim_rsi = 100 - (100 / (1 + rs))
+
+            # 3.2 Sample Returns based on Simulated Conditions
+            drawn_returns = np.zeros(simulations)
+
+            # Optimization: Group simulations by RSI state
+            rsi_bins = pd.cut(sim_rsi, bins=[0, RSI_LOW, RSI_HIGH, 100], labels=['Low', 'Mid', 'High'])
+
+            for state in ['Low', 'Mid', 'High']:
+                mask = (rsi_bins == state)
+                if mask.sum() == 0:
+                    continue
+
+                # Define the filter based on the simulated state
+                if state == 'Low':
+                    subset = month_data[month_data['Prev_RSI_BTC'] < RSI_LOW]
+                elif state == 'High':
+                    subset = month_data[month_data['Prev_RSI_BTC'] > RSI_HIGH]
+                else:
+                    subset = month_data  # Neutral RSI
+
+                # Apply Exogenous Macro filter
+                if is_strong_dxy:
+                    macro_subset = subset[subset['Prev_DXY_Trend'] > 0]
+                else:
+                    macro_subset = subset[subset['Prev_DXY_Trend'] <= 0]
+
+                # Flaw 5: Robust Fallback Logic
+                if len(macro_subset) >= MIN_SAMPLES:
+                    samples_df = macro_subset
+                elif len(subset) >= MIN_SAMPLES:
+                    # Fallback 1: RSI only
+                    samples_df = subset
+                else:
+                    # Fallback 2: Baseline (All data for this month)
+                    samples_df = month_data
+
+                # FLAW 8: The previous decay-based blending (decay_rate=0.8) is removed
+
+                # --- Weighted Sampling (FLAW 6) ---
+                conditioned_samples = samples_df['Ret_BTC'].values
+                sample_indices = samples_df.index
+
+                # Get weights corresponding to these samples
+                weights = weight_series.loc[sample_indices].values
+
+                # Normalize weights
+                weights_sum = weights.sum()
+                if weights_sum > 0 and not np.isclose(weights_sum, 0):
+                    normalized_weights = weights / weights_sum
+                else:
+                    normalized_weights = None  # Fallback to uniform if weights are zero/invalid
+
+                # Draw samples
+                if len(conditioned_samples) > 0:
+                    drawn_returns[mask] = np.random.choice(conditioned_samples, size=mask.sum(), p=normalized_weights)
+
+            # 3.3 Update States (Price and RSI components)
+
+            # Store previous price before update
+            prev_price = states['price'].copy()
+
+            # Update Price
+            states['price'] *= (1 + drawn_returns/100)
+            price_paths[:, t+1] = states['price']
+
+            # FLAW 4: Efficiently Update RSI Components (Wilder's Smoothing)
+            delta = states['price'] - prev_price
+
+            gain = np.where(delta > 0, delta, 0)
+            loss = np.where(delta < 0, -delta, 0)
+
+            # Wilder's update formula (vectorized)
+            states['BTC_AG'] = (states['BTC_AG'] * (RSI_PERIOD-1) + gain) / RSI_PERIOD
+            states['BTC_AL'] = (states['BTC_AL'] * (RSI_PERIOD-1) + loss) / RSI_PERIOD
+
+        return future_dates, price_paths, match_logic, sample_size_context
 

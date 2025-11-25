@@ -1,0 +1,6 @@
+last_updated: 2025-11-25 03:50:51
+source: Calculated (derived from raw)
+date_range_start: 2015-12-01
+date_range_end: 2025-10-01
+total_months: 119
+columns: ['Ret_BTC', 'Trend_DXY', 'Trend_Rates']

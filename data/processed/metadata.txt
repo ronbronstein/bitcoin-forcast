@@ -1,0 +1,6 @@
+last_updated: 2025-11-25 03:50:51
+source: All sources combined & processed
+date_range_start: 2015-12-01
+date_range_end: 2025-10-01
+total_months: 119
+columns: ['BTC', 'DXY', 'GLD', 'NDX', 'TLT', 'USDT', 'SPX', 'Rates', 'BTC_Volume', 'active_addresses', 'hash_rate', 'n_transactions', 'BTC_AG', 'BTC_AL', 'RSI_BTC', 'SPX_AG', 'SPX_AL', 'RSI_SPX', 'NDX_AG', 'NDX_AL', 'RSI_NDX', 'GLD_AG', 'GLD_AL', 'RSI_GLD', 'TLT_AG', 'TLT_AL', 'RSI_TLT', 'USDT_AG', 'USDT_AL', 'RSI_USDT', 'Trend_DXY', 'Trend_Rates', 'Ret_BTC', 'Ret_SPX', 'Ret_NDX', 'Ret_GLD', 'Ret_TLT', 'Ret_USDT', 'Ret_HashRate', 'Ret_Transactions', 'Prev_RSI_BTC', 'Prev_RSI_SPX', 'Prev_RSI_NDX', 'Prev_DXY_Trend', 'Prev_Rate_Trend', 'Prev_BTC_AG', 'Prev_BTC_AL', 'Prev_SPX_AG', 'Prev_SPX_AL', 'Prev_NDX_AG', 'Prev_NDX_AL', 'Prev_RSI_GLD', 'Prev_GLD_AG', 'Prev_GLD_AL', 'Prev_RSI_TLT', 'Prev_TLT_AG', 'Prev_TLT_AL', 'Prev_RSI_USDT', 'Prev_USDT_AG', 'Prev_USDT_AL', 'Prev_Active_Addresses', 'Prev_Active_Addresses_Z']

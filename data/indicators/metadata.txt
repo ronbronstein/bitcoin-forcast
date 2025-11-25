@@ -1,0 +1,6 @@
+last_updated: 2025-11-25 03:50:51
+source: Calculated (Wilder's Method)
+date_range_start: 2015-12-01
+date_range_end: 2025-10-01
+total_months: 119
+columns: ['RSI_BTC', 'RSI_SPX', 'RSI_NDX']

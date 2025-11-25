@@ -1,0 +1,1399 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>BTC Matrix Forecast (V4.1)</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+            <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+            <style>
+                :root { --bg: #0d1117; --card: #161b22; --border: #30363d; --text: #e6edf3; --text-dim: #8b949e; --green: #3fb950; --red: #da3633; --accent: #1f6feb; }
+                body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding: 30px; }
+                .container { max-width: 1400px; margin: 0 auto; }
+                
+                /* Header */
+                h1 { font-size: 24px; font-weight: 800; margin: 0 0 5px 0; }
+                .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 30px; }
+                
+                /* Grid */
+                .grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; margin-bottom: 30px; }
+                
+                /* Cards */
+                .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; overflow: hidden; }
+                .card h3 { margin: 0 0 15px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+                
+                /* Status Panel */
+                .status-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
+                .status-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+                
+                /* The Matrix Table */
+                .matrix-container { overflow-x: auto; }
+                table { width: 100%; border-collapse: collapse; font-size: 12px; }
+                th, td { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
+                th { text-align: left; position: sticky; left: 0; background: var(--card); z-index: 2; border-right: 1px solid var(--border); }
+                td:first-child { position: sticky; left: 0; background: var(--card); z-index: 1; text-align: left; font-weight: 600; border-right: 1px solid var(--border); }
+                
+                .cell-val { font-weight: 700; display: block; }
+                .cell-sub { font-size: 10px; opacity: 0.7; display: block; margin-top: 2px; }
+                
+                /* Heatmap Colors */
+                .pos-high { color: #3fb950; } 
+                .pos-mid { color: #7ee787; }
+                .neg-mid { color: #ffa198; }
+                .neg-high { color: #da3633; }
+                
+                .low-confidence { opacity: 0.5; font-style: italic; }
+                
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Bitcoin Scenario Matrix (V4.1)</h1>
+                <div class="subtitle">Conditional Probability Engine • 10-Year Historical Analysis</div>
+                
+                <div class="grid">
+                    <!-- LEFT: Current Status -->
+                    <div class="card">
+                        <h3>Current Conditions</h3>
+        
+                    <div class="status-row" style="border-bottom: 2px solid var(--border); padding-bottom: 12px; margin-bottom: 12px;">
+                        <span style="font-weight: 700;">Halving Phase</span>
+                        <span class="status-val" style="color: #58a6ff">📈 Year 2 Post-Halving</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Time Since Halving</span>
+                        <span class="status-val">1y 6m</span>
+                    </div>
+                
+                <div class="status-row">
+                    <span>RSI_BTC</span>
+                    <span class="status-val">57.01</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>RSI_SPX</span>
+                    <span class="status-val">69.57</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>RSI_NDX</span>
+                    <span class="status-val">70.69</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>DXY_Trend</span>
+                    <span class="status-val">0.31</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>Rate_Trend</span>
+                    <span class="status-val">-1.47</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>Date</span>
+                    <span class="status-val">2025-11-01 00:00:00</span>
+                </div>
+            
+                <div class="status-row">
+                    <span>Active_Addresses</span>
+                    <span class="status-val">523305.51</span>
+                </div>
+            
+                        <div style="margin-top: 20px; padding-top: 10px; border-top: 1px dashed var(--border);">
+                            <h3>Forecast Targets (12m)</h3>
+                            <div class="status-row">
+                                <span>Logic</span>
+                                <span class="status-val" style="color: var(--accent)">Blended (Month 1, 100% conditioned, 5y)</span>
+                            </div>
+                            <div class="status-row">
+                                <span>Sample Size (N)</span>
+                                <span class="status-val" style="color: #3fb950">2000 years</span>
+                            </div>
+                            <div class="status-row">
+                                <span>🚀 Bull Case (P90)</span>
+                                <span class="status-val" style="color: #3fb950">$360,410</span>
+                            </div>
+                            <div class="status-row">
+                                <span>🎯 Base Case (Median)</span>
+                                <span class="status-val" style="color: #e6edf3">$156,377</span>
+                            </div>
+                            <div class="status-row">
+                                <span>🐻 Bear Case (P10)</span>
+                                <span class="status-val" style="color: #da3633">$66,695</span>
+                            </div>
+                            <div class="status-row">
+                                <span>1-Mo Win Prob</span>
+                                <span class="status-val" style="color: var(--red)">40.2%</span>
+                            </div>
+                            <div class="status-row">
+                                <span>12-Mo Win Prob</span>
+                                <span class="status-val" style="color: var(--green)">76.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RIGHT: Forecast Chart -->
+                    <div class="card">
+                        <h3>Projected Scenarios (Bear / Base / Bull)</h3>
+                        <div id="chart_div" style="height: 300px;"></div>
+                    </div>
+                </div>
+                
+                <!-- REGIME COMPARISON SECTION -->
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Regime Comparison: All History vs Recent Era (2020+)</h3>
+                    <div id="regime_chart" style="height: 250px;"></div>
+                </div>
+                
+                <!-- BOTTOM: THE MATRIX -->
+                <div class="card">
+                    <h3>Historical Scenario Matrix (Win Rate % / Avg Return %)</h3>
+                    <div class="matrix-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 200px;">Scenario</th>
+        <th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>May</th><th>Jun</th><th>Jul</th><th>Aug</th><th>Sep</th><th>Oct</th><th>Nov</th><th>Dec</th></tr></thead><tbody><tr><td>1. Baseline (All History)</td>
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-mid">+2.1% ⚠</span>
+                            <span class="cell-sub">56% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -9.3% to +13.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-high">+15.3% ⚠</span>
+                            <span class="cell-sub">89% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +6.8% to +24.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-mid">+1.1% ⚠</span>
+                            <span class="cell-sub">56% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.3% to +11.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-high">+11.0% ⚠</span>
+                            <span class="cell-sub">67% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +0.4% to +21.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-mid">+10.2% ⚠</span>
+                            <span class="cell-sub">56% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.4% to +29.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val neg-mid">+0.5% ⚠</span>
+                            <span class="cell-sub">44% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.0% to +10.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-high">+9.2% ⚠</span>
+                            <span class="cell-sub">67% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +2.4% to +16.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.8">
+                            <span class="cell-val neg-mid">+4.1% ⚠</span>
+                            <span class="cell-sub">38% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.7% to +19.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.8">
+                            <span class="cell-val neg-high">-4.4% ⚠</span>
+                            <span class="cell-sub">25% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.9% to -0.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.8">
+                            <span class="cell-val pos-high">+21.5% ⚠</span>
+                            <span class="cell-sub">88% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +12.1% to +31.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val neg-mid">+2.8% ⚠</span>
+                            <span class="cell-sub">44% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.6% to +19.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.9">
+                            <span class="cell-val pos-mid">+11.9% ⚠</span>
+                            <span class="cell-sub">56% WR (9y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +0.9% to +23.9%</span>
+                        </td>
+                    </tr><tr><td>1b. Recent Regime (2020+)</td>
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+13.6% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -1.3% to +27.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+16.9% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +2.4% to +32.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+10.1% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.7% to +23.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">+0.6% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -12.4% to +15.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">-7.5% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -21.8% to +5.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-high">-8.5% ⚠</span>
+                            <span class="cell-sub">20% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -21.0% to +2.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+11.9% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +3.4% to +19.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">-2.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -12.0% to +7.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">-3.5% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.3% to +0.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+25.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +16.6% to +34.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">+2.9% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.4% to +20.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+9.4% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.1% to +31.1%</span>
+                        </td>
+                    </tr><tr><td>2. High RSI (>65)</td>
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">-4.3% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -18.3% to +9.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+19.9% ⚠️</span>
+                            <span class="cell-sub">100% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +8.4% to +31.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+1.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -20.6% to +20.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">+2.9% ⚠️</span>
+                            <span class="cell-sub">33% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.7% to +16.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+15.2% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -19.8% to +50.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+0.7% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">+0.6% ⚠️</span>
+                            <span class="cell-sub">33% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.1% to +8.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+63.6% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-7.5% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+49.1% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-mid">+17.3% ⚠</span>
+                            <span class="cell-sub">60% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -4.1% to +37.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+24.1% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -2.1% to +43.1%</span>
+                        </td>
+                    </tr><tr><td>3. Low RSI (<45)</td>
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+16.1% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+11.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+18.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-14.1% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-3.1% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+5.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-16.2% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-3.6% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    </tr><tr><td>4. Risk-On (SPX RSI > 60)</td>
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+0.2% ⚠</span>
+                            <span class="cell-sub">67% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.7% to +12.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+17.9% ⚠</span>
+                            <span class="cell-sub">83% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +5.6% to +29.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-mid">+2.1% ⚠</span>
+                            <span class="cell-sub">60% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -13.5% to +17.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+9.1% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.0% to +23.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-mid">+17.4% ⚠</span>
+                            <span class="cell-sub">60% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -12.9% to +48.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">-4.8% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.8% to +2.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+10.5% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +2.3% to +18.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.7">
+                            <span class="cell-val neg-mid">+6.7% ⚠</span>
+                            <span class="cell-sub">43% WR (7y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.5% to +23.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-high">-4.5% ⚠</span>
+                            <span class="cell-sub">20% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.5% to -1.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+23.0% ⚠</span>
+                            <span class="cell-sub">83% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +10.2% to +35.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">+5.1% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -15.0% to +26.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+14.1% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -2.5% to +30.5%</span>
+                        </td>
+                    </tr><tr><td>5. Risk-Off (SPX RSI < 40)</td>
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.0">
+                            <span class="cell-val neg-high low-confidence">+0.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (0y)</span>
+                            
+                        </td>
+                    </tr><tr><td>6. Strong Dollar (Rising)</td>
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+0.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+20.6% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +6.7% to +34.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.8">
+                            <span class="cell-val pos-mid">+1.9% ⚠</span>
+                            <span class="cell-sub">62% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.9% to +13.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">+6.1% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.7% to +22.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+9.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -17.3% to +40.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+12.6% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -4.2% to +26.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+10.8% ⚠</span>
+                            <span class="cell-sub">80% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +2.6% to +19.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-9.3% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-high">-3.3% ⚠</span>
+                            <span class="cell-sub">33% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.8% to +1.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.7">
+                            <span class="cell-val pos-high">+22.5% ⚠</span>
+                            <span class="cell-sub">86% WR (7y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +10.6% to +34.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+11.0% ⚠</span>
+                            <span class="cell-sub">67% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.9% to +32.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">+2.6% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -9.8% to +15.2%</span>
+                        </td>
+                    </tr><tr><td>7. Weak Dollar (Falling)</td>
+                        <td style="opacity: 0.8">
+                            <span class="cell-val neg-mid">+2.3% ⚠</span>
+                            <span class="cell-sub">50% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.4% to +16.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+8.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +1.3% to +16.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-4.8% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+17.2% ⚠️</span>
+                            <span class="cell-sub">100% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +6.4% to +27.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-mid">+11.0% ⚠</span>
+                            <span class="cell-sub">60% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -13.8% to +38.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-high">-9.2% ⚠</span>
+                            <span class="cell-sub">20% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -19.3% to +0.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+7.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -4.8% to +16.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+8.6% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.6% to +29.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-7.7% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+15.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">-13.7% ⚠️</span>
+                            <span class="cell-sub">0% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -17.2% to -10.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+23.6% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +4.2% to +40.7%</span>
+                        </td>
+                    </tr><tr><td>8. Hiking/Tight (Rates Up)</td>
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+4.2% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -18.3% to +26.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.8">
+                            <span class="cell-val pos-high">+12.7% ⚠</span>
+                            <span class="cell-sub">88% WR (8y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +3.9% to +22.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.7">
+                            <span class="cell-val pos-mid">+0.7% ⚠</span>
+                            <span class="cell-sub">57% WR (7y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.5% to +11.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+13.7% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -2.9% to +30.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.7">
+                            <span class="cell-val pos-mid">+15.5% ⚠</span>
+                            <span class="cell-sub">57% WR (7y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -4.4% to +36.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.7">
+                            <span class="cell-val neg-mid">-2.1% ⚠</span>
+                            <span class="cell-sub">43% WR (7y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -15.2% to +9.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-high">+19.6% ⚠</span>
+                            <span class="cell-sub">100% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +17.6% to +21.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">+7.2% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -12.7% to +27.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val neg-mid">-1.3% ⚠</span>
+                            <span class="cell-sub">40% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.1% to +3.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+19.6% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +3.7% to +38.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+2.3% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -15.4% to +22.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+11.0% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +0.6% to +23.7%</span>
+                        </td>
+                    </tr><tr><td>9. Cutting/Loose (Rates Flat/Down)</td>
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+1.0% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -10.0% to +12.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+36.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+2.7% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+9.7% ⚠</span>
+                            <span class="cell-sub">67% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -2.3% to +21.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-8.4% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+9.5% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">-3.7% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.9% to -0.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+1.0% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.4% to +8.0%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">-9.6% ⚠️</span>
+                            <span class="cell-sub">0% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.8% to -7.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+23.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +14.0% to +33.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+12.3% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+13.7% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -8.5% to +35.9%</span>
+                        </td>
+                    </tr><tr><td>10. Golden Pocket (Weak DXY + Bull RSI)</td>
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">-2.4% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -14.9% to +9.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+11.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-4.8% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+17.2% ⚠️</span>
+                            <span class="cell-sub">100% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +6.4% to +29.1%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.5">
+                            <span class="cell-val pos-mid">+11.0% ⚠</span>
+                            <span class="cell-sub">60% WR (5y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -13.2% to +35.3%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-high low-confidence">-2.0% ⚠️</span>
+                            <span class="cell-sub">25% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.6% to +4.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+7.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -4.8% to +16.9%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val neg-mid">+8.6% ⚠</span>
+                            <span class="cell-sub">50% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -6.3% to +29.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-7.7% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+15.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-12.4% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+32.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +20.8% to +44.6%</span>
+                        </td>
+                    </tr><tr><td>11. Doom Scenario (Strong DXY + Hiking)</td>
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+0.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+16.7% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +3.6% to +31.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.6">
+                            <span class="cell-val pos-high">+1.6% ⚠</span>
+                            <span class="cell-sub">67% WR (6y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -12.2% to +13.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-17.2% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+9.2% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -16.5% to +40.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+8.0% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.7% to +21.8%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+19.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +18.2% to +20.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-14.1% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+0.3% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -3.8% to +3.7%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+19.6% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +3.7% to +38.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val pos-high low-confidence">+9.2% ⚠️</span>
+                            <span class="cell-sub">75% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -15.0% to +34.6%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.4">
+                            <span class="cell-val neg-mid low-confidence">+7.9% ⚠️</span>
+                            <span class="cell-sub">50% WR (4y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.4% to +20.7%</span>
+                        </td>
+                    </tr><tr><td>12. Post-Halving Year 1 (0-12mo)</td>
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+7.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+29.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+10.7% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+11.9% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+15.2% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -19.8% to +50.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">-0.7% ⚠️</span>
+                            <span class="cell-sub">33% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -5.9% to +4.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+14.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +7.4% to +21.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-2.4% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-0.9% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+21.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+24.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+38.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    </tr><tr><td>13. Post-Halving Year 2 (12-24mo)</td>
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-22.3% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+7.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-13.8% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+7.7% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-17.3% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-10.3% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+20.1% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+38.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-7.5% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+44.6% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">+12.6% ⚠️</span>
+                            <span class="cell-sub">33% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -11.2% to +36.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">+9.8% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    </tr><tr><td>14. Pre-Halving Year (36-48mo)</td>
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+5.5% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -9.3% to +20.2%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+18.1% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +0.9% to +35.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val neg-high low-confidence">-4.5% ⚠️</span>
+                            <span class="cell-sub">33% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -18.3% to +9.4%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+9.0% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: -7.5% to +34.5%</span>
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+13.9% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+19.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-5.7% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-7.9% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-4.9% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+19.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-mid low-confidence">-4.5% ⚠️</span>
+                            <span class="cell-sub">50% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.3">
+                            <span class="cell-val pos-high low-confidence">+7.1% ⚠️</span>
+                            <span class="cell-sub">67% WR (3y)</span>
+                            <br><span style='font-size: 9px; opacity: 0.6;'>CI: +0.7% to +13.4%</span>
+                        </td>
+                    </tr><tr><td>15. High Network Activity</td>
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+14.2% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+36.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+30.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-2.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-35.4% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+12.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-4.1% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-11.3% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+4.0% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+27.8% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val pos-high low-confidence">+25.6% ⚠️</span>
+                            <span class="cell-sub">100% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+47.8% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    </tr><tr><td>16. Low Network Activity</td>
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+0.8% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+43.7% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+5.4% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-15.0% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+11.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-7.1% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+3.1% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+13.3% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-7.2% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val pos-high low-confidence">+5.5% ⚠️</span>
+                            <span class="cell-sub">100% WR (1y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.2">
+                            <span class="cell-val neg-high low-confidence">-14.7% ⚠️</span>
+                            <span class="cell-sub">0% WR (2y)</span>
+                            
+                        </td>
+                    
+                        <td style="opacity: 0.1">
+                            <span class="cell-val neg-high low-confidence">-3.6% ⚠️</span>
+                            <span class="cell-sub">0% WR (1y)</span>
+                            
+                        </td>
+                    </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 10px; font-size: 11px; color: var(--text-dim);">
+                    *Data based on 10 years of monthly history. 'Prev RSI' refers to the condition at the START of the month.
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            var plotData = {"data": [{"hovertemplate": "<b>Bear Case</b><br>Date: %{x}<br>Price: $%{y:,.0f}<extra></extra>", "line": {"color": "#da3633", "dash": "dot", "width": 2}, "marker": {"size": 4}, "mode": "lines+markers", "name": "Bear Case ($66,695)", "x": ["2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01", "2026-10-01", "2026-11-01"], "y": [95061.1015625, 77219.69690642647, 71341.4579871098, 76151.84060300826, 67407.88232349942, 67146.60192191358, 63517.207223966005, 60339.10416733579, 64664.032358353914, 63078.94369060767, 61284.35631296704, 72208.92709494774, 66695.14628503921], "type": "scatter"}, {"hovertemplate": "<b>Base Case</b><br>Date: %{x}<br>Price: $%{y:,.0f}<extra></extra>", "line": {"color": "#e6edf3", "width": 3}, "marker": {"size": 4}, "mode": "lines+markers", "name": "Base Case ($156,377)", "x": ["2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01", "2026-10-01", "2026-11-01"], "y": [95061.1015625, 90338.82332911709, 92906.02892283886, 112484.28672024282, 112500.6040467543, 117798.6633441979, 124366.3880005827, 121485.32956749006, 132976.32650809162, 132804.36515372636, 126177.72694304277, 152628.56689993638, 156376.80379583372], "type": "scatter"}, {"hovertemplate": "<b>Bull Case</b><br>Date: %{x}<br>Price: $%{y:,.0f}<extra></extra>", "line": {"color": "#3fb950", "dash": "dash", "width": 2}, "marker": {"size": 4}, "mode": "lines+markers", "name": "Bull Case ($360,410)", "x": ["2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01", "2026-04-01", "2026-05-01", "2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01", "2026-10-01", "2026-11-01"], "y": [95061.1015625, 122858.49228762486, 140280.6511906274, 168634.21167136493, 181461.5419474485, 202126.78155592995, 239527.55654875605, 247855.08173635358, 276442.2189309747, 295121.27623791544, 281834.4372025719, 345662.94174396095, 360410.180039121], "type": "scatter"}], "layout": {"template": {"data": {"barpolar": [{"marker": {"line": {"color": "rgb(17,17,17)", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "barpolar"}], "bar": [{"error_x": {"color": "#f2f5fa"}, "error_y": {"color": "#f2f5fa"}, "marker": {"line": {"color": "rgb(17,17,17)", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "bar"}], "carpet": [{"aaxis": {"endlinecolor": "#A2B1C6", "gridcolor": "#506784", "linecolor": "#506784", "minorgridcolor": "#506784", "startlinecolor": "#A2B1C6"}, "baxis": {"endlinecolor": "#A2B1C6", "gridcolor": "#506784", "linecolor": "#506784", "minorgridcolor": "#506784", "startlinecolor": "#A2B1C6"}, "type": "carpet"}], "choropleth": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "choropleth"}], "contourcarpet": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "contourcarpet"}], "contour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "contour"}], "heatmap": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "heatmap"}], "histogram2dcontour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2dcontour"}], "histogram2d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2d"}], "histogram": [{"marker": {"pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "histogram"}], "mesh3d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "mesh3d"}], "parcoords": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "parcoords"}], "pie": [{"automargin": true, "type": "pie"}], "scatter3d": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatter3d"}], "scattercarpet": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattercarpet"}], "scattergeo": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattergeo"}], "scattergl": [{"marker": {"line": {"color": "#283442"}}, "type": "scattergl"}], "scattermapbox": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermapbox"}], "scattermap": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermap"}], "scatterpolargl": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolargl"}], "scatterpolar": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolar"}], "scatter": [{"marker": {"line": {"color": "#283442"}}, "type": "scatter"}], "scatterternary": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterternary"}], "surface": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "surface"}], "table": [{"cells": {"fill": {"color": "#506784"}, "line": {"color": "rgb(17,17,17)"}}, "header": {"fill": {"color": "#2a3f5f"}, "line": {"color": "rgb(17,17,17)"}}, "type": "table"}]}, "layout": {"annotationdefaults": {"arrowcolor": "#f2f5fa", "arrowhead": 0, "arrowwidth": 1}, "autotypenumbers": "strict", "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]], "sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}, "colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#f2f5fa"}, "geo": {"bgcolor": "rgb(17,17,17)", "lakecolor": "rgb(17,17,17)", "landcolor": "rgb(17,17,17)", "showlakes": true, "showland": true, "subunitcolor": "#506784"}, "hoverlabel": {"align": "left"}, "hovermode": "closest", "mapbox": {"style": "dark"}, "paper_bgcolor": "rgb(17,17,17)", "plot_bgcolor": "rgb(17,17,17)", "polar": {"angularaxis": {"gridcolor": "#506784", "linecolor": "#506784", "ticks": ""}, "bgcolor": "rgb(17,17,17)", "radialaxis": {"gridcolor": "#506784", "linecolor": "#506784", "ticks": ""}}, "scene": {"xaxis": {"backgroundcolor": "rgb(17,17,17)", "gridcolor": "#506784", "gridwidth": 2, "linecolor": "#506784", "showbackground": true, "ticks": "", "zerolinecolor": "#C8D4E3"}, "yaxis": {"backgroundcolor": "rgb(17,17,17)", "gridcolor": "#506784", "gridwidth": 2, "linecolor": "#506784", "showbackground": true, "ticks": "", "zerolinecolor": "#C8D4E3"}, "zaxis": {"backgroundcolor": "rgb(17,17,17)", "gridcolor": "#506784", "gridwidth": 2, "linecolor": "#506784", "showbackground": true, "ticks": "", "zerolinecolor": "#C8D4E3"}}, "shapedefaults": {"line": {"color": "#f2f5fa"}}, "sliderdefaults": {"bgcolor": "#C8D4E3", "bordercolor": "rgb(17,17,17)", "borderwidth": 1, "tickwidth": 0}, "ternary": {"aaxis": {"gridcolor": "#506784", "linecolor": "#506784", "ticks": ""}, "baxis": {"gridcolor": "#506784", "linecolor": "#506784", "ticks": ""}, "bgcolor": "rgb(17,17,17)", "caxis": {"gridcolor": "#506784", "linecolor": "#506784", "ticks": ""}}, "title": {"x": 0.05}, "updatemenudefaults": {"bgcolor": "#506784", "borderwidth": 0}, "xaxis": {"automargin": true, "gridcolor": "#283442", "linecolor": "#506784", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "#283442", "zerolinewidth": 2}, "yaxis": {"automargin": true, "gridcolor": "#283442", "linecolor": "#506784", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "#283442", "zerolinewidth": 2}}}, "margin": {"l": 40, "r": 40, "t": 30, "b": 40}, "yaxis": {"gridcolor": "#30363d", "title": {"text": "Price (USD)"}, "automargin": true}, "xaxis": {"gridcolor": "#30363d"}, "legend": {"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "right", "x": 1}, "hoverlabel": {"font": {"color": "#e6edf3"}, "bgcolor": "#161b22"}, "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)", "showlegend": true, "hovermode": "x unified"}};
+            Plotly.newPlot('chart_div', plotData.data, plotData.layout, {responsive: true});
+            
+            var regimeData = {"data": [], "layout": {}};
+            Plotly.newPlot('regime_chart', regimeData.data, regimeData.layout, {responsive: true});
+        </script>
+        </body>
+        </html>
+        

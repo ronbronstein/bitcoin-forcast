@@ -2,11 +2,14 @@
 Simple script to run the full backtest and generate report
 """
 
-import backtest_engine
-import backtest_viz
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from src import backtest_engine
+from scripts import backtest_viz
 import pandas as pd
 import webbrowser
-import os
 
 def main():
     print("="*70)
@@ -24,22 +27,24 @@ def main():
     
     # Step 2: Save CSV
     print("\nStep 2/3: Saving results...")
-    results.to_csv('backtest_results.csv', index=False)
-    print(f"💾 CSV saved: backtest_results.csv")
-    
+    output_csv = os.path.join('outputs', 'backtest_results.csv')
+    results.to_csv(output_csv, index=False)
+    print(f"💾 CSV saved: {output_csv}")
+
     # Step 3: Generate Visual Report
     print("\nStep 3/3: Generating visual report...")
     viz = backtest_viz.BacktestViz(results)
     html = viz.generate_report()
-    
-    with open('backtest_report.html', 'w', encoding='utf-8') as f:
+
+    output_html = os.path.join('outputs', 'backtest_report.html')
+    with open(output_html, 'w', encoding='utf-8') as f:
         f.write(html)
-    
-    print(f"✅ Report saved: backtest_report.html")
-    
+
+    print(f"✅ Report saved: {output_html}")
+
     # Open in browser
     print("\n🌐 Opening report in browser...")
-    webbrowser.open('file://' + os.path.abspath('backtest_report.html'))
+    webbrowser.open('file://' + os.path.abspath(output_html))
     
     print("\n" + "="*70)
     print("✨ BACKTEST COMPLETE!")

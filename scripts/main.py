@@ -1,7 +1,9 @@
-import data_loader
-import scenario_engine
-import dashboard_view
+import sys
 import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from src import data_loader, scenario_engine
+from scripts import dashboard_view
 import webbrowser
 import datetime
 
@@ -22,27 +24,17 @@ def main():
     
     # 3. Generate Forecast for Next 12 Months
     # We need current price from the dataframe
-    current_price = float(df['BTC'].iloc[-1]) # Ensure float
+    current_price = float(df['BTC'].iloc[-1])  # Ensure float
     print(f"DEBUG: Current Price is {current_price}")
     current_date = df.index[-1]
-    
+
     # Clean up timezone for logic
     if current_date.tzinfo is not None:
         current_date = current_date.tz_localize(None)
-    
-    # Incomplete Month Warning
-    current_day = current_date.day
-    # Simple approach to get days in month
-    if current_date.month == 12:
-        next_month = current_date.replace(year=current_date.year + 1, month=1, day=1)
-    else:
-        next_month = current_date.replace(month=current_date.month + 1, day=1)
-    days_in_month = (next_month - datetime.timedelta(days=1)).day
-    
-    if current_day < 28:
-        print(f"⚠️ WARNING: Current month ({current_date.strftime('%B')}) is incomplete (Day {current_day}).")
-        print("   Indicators are volatile. Forecast assumes current RSI/Trends hold through month-end.")
-    
+
+    # FLAW 7 FIX: Incomplete month handling is now done in data_loader.py
+    # No warning needed here as data_loader excludes incomplete months
+
     forecast_data = engine.generate_forecast(current_price, current_date)
     current_conditions = engine.get_current_conditions()
     
@@ -51,10 +43,10 @@ def main():
     html_content = viewer.render_dashboard(matrix_df, forecast_data, current_conditions)
     
     # Save
-    filename = "btc_matrix_v4.html"
+    filename = os.path.join('outputs', 'btc_matrix_v4.html')
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html_content)
-        
+
     print(f"✨ Dashboard Ready: {os.path.abspath(filename)}")
     webbrowser.open('file://' + os.path.abspath(filename))
 

@@ -32,25 +32,25 @@ class BacktestEngine:
         print("="*70)
         print("🔬 STARTING WALK-FORWARD BACKTEST")
         print("="*70)
-        
-        # Load full dataset
+
+        # FLAW 3 FIX: Load RAW dataset only (no indicator processing yet)
         loader = data_loader.DataLoader()
-        full_df = loader.fetch_data()
-        
-        if full_df.empty:
+        full_raw_df = loader.fetch_raw_data()
+
+        if full_raw_df.empty:
             print("❌ No data loaded")
             return pd.DataFrame()
-        
+
         # Get test period dates
         test_start = pd.Timestamp(f'{self.start_year}-01-01')
         test_end = pd.Timestamp.now()
-        
-        # Filter to months in test period that have actual data
-        test_months = full_df[
-            (full_df.index >= test_start) & 
-            (full_df.index <= test_end)
+
+        # Filter to months in test period based on RAW data availability
+        test_months = full_raw_df[
+            (full_raw_df.index >= test_start) &
+            (full_raw_df.index <= test_end)
         ].index.tolist()
-        
+
         print(f"\n📅 Testing Period: {test_start.strftime('%Y-%m')} to {test_end.strftime('%Y-%m')}")
         print(f"   Total Months to Test: {len(test_months)}")
         print(f"   This will take ~{len(test_months) * 2} seconds...\n")
@@ -62,7 +62,6 @@ class BacktestEngine:
                 print(f"\n⏭️  Skipping {test_date.strftime('%Y-%m')} (current month, no actual outcome yet)")
                 break
 
-            # Get actual outcome (next month's return)
             actual_next_month = test_months[i + 1]
 
             # Validate that next month exists and is within reasonable timeframe (max 45 days)
@@ -71,36 +70,56 @@ class BacktestEngine:
                 print(f"   ⏭️  Invalid time gap ({days_diff} days), skipping {test_date.strftime('%Y-%m')}...")
                 continue
 
-            actual_return = full_df.loc[actual_next_month, 'Ret_BTC']
-            actual_price_start = full_df.loc[test_date, 'BTC']
-            actual_price_end = full_df.loc[actual_next_month, 'BTC']
+            # Get actual outcomes from RAW data (Ret_BTC doesn't exist yet)
+            try:
+                actual_price_start = full_raw_df.loc[test_date, 'BTC']
+                actual_price_end = full_raw_df.loc[actual_next_month, 'BTC']
+                # Calculate return manually
+                actual_return = ((actual_price_end / actual_price_start) - 1) * 100
+            except KeyError:
+                print(f"   ⏭️  Missing price data, skipping {test_date.strftime('%Y-%m')}...")
+                continue
 
             # Validate actual data quality
-            if pd.isna(actual_return) or pd.isna(actual_price_start) or pd.isna(actual_price_end):
+            if pd.isna(actual_price_start) or pd.isna(actual_price_end):
                 print(f"   ⏭️  Missing price/return data, skipping {test_date.strftime('%Y-%m')}...")
                 continue
 
             print(f"\n{'='*70}")
-            print(f"📊 Testing: {test_date.strftime('%B %Y')} → {actual_next_month.strftime('%B %Y')}")
+            # Update logging for clarity
+            print(f"📊 Testing: Forecasting FOR {actual_next_month.strftime('%B %Y')}, made AT {test_date.strftime('%B %Y')}")
             print(f"   Actual: ${actual_price_start:,.0f} → ${actual_price_end:,.0f} ({actual_return:+.1f}%)")
-            
-            # Train on data UP TO (but not including) the test month
-            train_df = full_df[full_df.index < test_date].copy()
-            
-            if len(train_df) < 24:  # Need at least 2 years to train
-                print(f"   ⏭️  Insufficient training data ({len(train_df)} months), skipping...")
-                continue
-            
-            # Create engine with training data only
-            engine = scenario_engine.ScenarioEngine(train_df)
-            
-            # Get conditions at the test date (end of month we're predicting FROM)
-            current_conditions = self._get_conditions_at_date(full_df, test_date)
 
-            # Validate that all required conditions exist (no NaN values)
-            required_conditions = ['RSI_BTC', 'RSI_SPX', 'DXY_Trend', 'Rate_Trend']
+            # FLAW 1 FIX (T-2 Lag): Train on data up to AND INCLUDING the test month (T-1)
+            # Original code used < test_date (T-2)
+            train_raw_df = full_raw_df[full_raw_df.index <= test_date].copy()
+
+            if len(train_raw_df) < 36:  # Need enough data for indicators (14m RSI) + analysis
+                print(f"   ⏭️  Insufficient raw training data ({len(train_raw_df)} months), skipping...")
+                continue
+
+            # FLAW 3 FIX: Process indicators INSIDE the loop (Point-in-Time)
+            try:
+                # Use the loader instance to process the raw slice
+                train_df = loader.process_indicators(train_raw_df)
+            except Exception as e:
+                print(f"   ❌ Error processing indicators P.I.T.: {e}. Skipping.")
+                continue
+
+            if train_df.empty or len(train_df) < 12:
+                print(f"   ⏭️  Insufficient processed data (indicators warming up), skipping...")
+                continue
+
+            # Create engine with P.I.T. training data only
+            engine = scenario_engine.ScenarioEngine(train_df)
+
+            # Get conditions from the engine (P.I.T. correct)
+            current_conditions = engine.get_current_conditions()
+
+            # Validate that all required conditions exist (including new components)
+            required_conditions = ['RSI_BTC', 'RSI_SPX', 'DXY_Trend', 'Rate_Trend', 'BTC_AG', 'BTC_AL']
             if any(pd.isna(current_conditions.get(key)) for key in required_conditions):
-                print(f"   ⏭️  Missing market conditions, skipping...")
+                print(f"   ⏭️  Missing market conditions (NaNs in P.I.T. data), skipping...")
                 continue
 
             # Generate 1-month forecast
@@ -192,20 +211,10 @@ class BacktestEngine:
             self._print_summary(results_df)
         
         return results_df
-    
-    def _get_conditions_at_date(self, df, date):
-        """Extract market conditions at a specific date"""
-        row = df.loc[date]
-        
-        return {
-            'RSI_BTC': row['RSI_BTC'],
-            'RSI_SPX': row['RSI_SPX'],
-            'RSI_NDX': row['RSI_NDX'],
-            'DXY_Trend': row['Trend_DXY'],
-            'Rate_Trend': row['Trend_Rates'],
-            'Date': date
-        }
-    
+
+    # FLAW 1/3 FIX: Removed obsolete _get_conditions_at_date helper function
+    # Conditions are now correctly extracted from the P.I.T. processed engine
+
     def _print_summary(self, results_df):
         """Print overall backtest summary statistics"""
         print("\n" + "="*70)

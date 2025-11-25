@@ -1,0 +1,6 @@
+last_updated: 2025-11-25 03:50:51
+source: Yahoo Finance + Blockchain.com
+date_range_start: 2015-12-01
+date_range_end: 2025-10-01
+total_months: 119
+columns: ['BTC', 'SPX', 'NDX', 'DXY', 'Rates']
