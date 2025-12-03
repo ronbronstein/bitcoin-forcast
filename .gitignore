@@ -29,7 +29,6 @@ env/
 *.log
 *.tmp
 .cache/
-claude.md
 
 # OS
 .DS_Store
