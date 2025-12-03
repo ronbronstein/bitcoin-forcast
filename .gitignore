@@ -33,3 +33,6 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Archived code (old implementation)
+archive/
