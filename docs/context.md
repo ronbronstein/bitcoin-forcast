@@ -77,16 +77,28 @@ BTC has historically positive mean return (~9%/month in training data). Predicti
 
 ## Known Limitations
 
-1. **Baseline is simple** - Just predicts historical mean
-2. **No regime awareness** - Doesn't adapt to market conditions
-3. **Monthly only** - No daily/weekly granularity
+1. **Monthly only** - No daily/weekly granularity
+2. **Limited macro data** - No VIX or yield curve yet
 
-## Future Improvements (Phase 6)
+## Phase 6 Status
 
-1. **Conditional Model** - RSI-based regime classification
-2. **Scenario Matching** - Find similar historical periods
-3. **Path-Dependent Monte Carlo** - RSI evolves during simulation
-4. **Additional Features** - VIX, yield curve, on-chain metrics
+| Feature | Status | Command |
+|---------|--------|---------|
+| Conditional Model | ✅ Done | `python run_backtest.py --model conditional` |
+| Scenario Matching | ✅ Done | `python run_scenarios.py` |
+| Path-Dependent Monte Carlo | ✅ Done | `python run_forecast.py` |
+| Additional Features | ⏳ TODO | - |
+
+## Remaining TODO
+
+1. **Additional Features**
+   - VIX (volatility index) from Yahoo Finance
+   - Yield curve (2Y/10Y spread)
+   - More on-chain metrics (exchange flows, whale activity)
+
+2. **Integration Tests** - End-to-end pipeline tests (tests/integration/ is empty)
+
+3. **Daily/Weekly Granularity** - Currently monthly only
 
 ## Archived Code Reference
 
