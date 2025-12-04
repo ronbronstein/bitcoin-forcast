@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Run baseline backtest for Bitcoin forecast model.
+Run backtest for Bitcoin forecast models.
 
 Usage:
-    python run_backtest.py
+    python run_backtest.py                    # Baseline model
+    python run_backtest.py --model conditional  # Conditional model
     python run_backtest.py --start 2021-01-01 --end 2024-12-01
 """
 import argparse
@@ -11,12 +12,20 @@ from pathlib import Path
 import pandas as pd
 
 from src.data import DataLoader
-from src.models import HistoricalMeanModel
+from src.models import HistoricalMeanModel, ConditionalMeanModel
 from src.backtest import BacktestEngine, BacktestConfig, BacktestReporter
+
+MODELS = {
+    'baseline': HistoricalMeanModel,
+    'conditional': ConditionalMeanModel,
+}
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Run baseline backtest')
+    parser = argparse.ArgumentParser(description='Run backtest')
+    parser.add_argument('--model', type=str, default='baseline',
+                        choices=list(MODELS.keys()),
+                        help='Model to use: baseline or conditional')
     parser.add_argument('--start', type=str, default='2020-01-01',
                         help='Start date (YYYY-MM-DD)')
     parser.add_argument('--end', type=str, default='2024-12-01',
@@ -29,6 +38,10 @@ def main():
                         help='Show detailed month-by-month results')
 
     args = parser.parse_args()
+
+    # Select model class
+    model_class = MODELS[args.model]
+    print(f'Using model: {args.model} ({model_class.__name__})')
 
     # Load data
     print('Loading data...')
@@ -46,7 +59,7 @@ def main():
 
     # Run backtest
     print('\nRunning backtest...')
-    engine = BacktestEngine(HistoricalMeanModel, config)
+    engine = BacktestEngine(model_class, config)
     results = engine.run(df, verbose=True)
 
     # Generate report

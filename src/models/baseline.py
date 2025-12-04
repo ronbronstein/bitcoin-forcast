@@ -49,7 +49,8 @@ class HistoricalMeanModel:
     def fit(
         self,
         returns: pd.Series,
-        as_of_date: pd.Timestamp
+        as_of_date: pd.Timestamp,
+        features: Optional[pd.DataFrame] = None
     ) -> 'HistoricalMeanModel':
         """
         Fit model on historical returns up to as_of_date.
@@ -57,6 +58,7 @@ class HistoricalMeanModel:
         Args:
             returns: Series of monthly returns (%)
             as_of_date: Maximum date for training (P.I.T.)
+            features: Optional DataFrame (unused in baseline, for API compat)
 
         Returns:
             Self for method chaining

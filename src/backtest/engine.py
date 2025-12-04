@@ -129,7 +129,7 @@ class BacktestEngine:
 
         # Train model (P.I.T. compliant)
         model = self.model_class()
-        model.fit(train_returns, forecast_date)
+        model.fit(train_returns, forecast_date, features=train_data)
 
         # Generate prediction
         prediction = model.predict()
